@@ -1,9 +1,10 @@
-// import QtQuick 1.0 // to target S60 5th Edition or Maemo 5
 import QtQuick 1.1
 
 Rectangle
 {
     id: root
+
+    property int leftTextOffset: 75
 
     ListModel
     {
@@ -107,174 +108,269 @@ Rectangle
         }
     }
 
+    Component
+    {
+        id: rowDelegate
+
+
+        Rectangle
+        {
+            width: root.width
+            height: 52
+            color: "transparent"
+
+            property int leftTextOffset: root.leftTextOffset
+
+            Text
+            {
+                width: root.leftTextOffset
+                anchors.top: one.top
+                text: hour24
+                anchors.topMargin: - (font.pointSize / 2) - 3 // i have to add "-3" to make it look nicely centered.. Why?
+                horizontalAlignment: Text.AlignRight
+                x: -5
+                visible: (index === 0 || hourList.count === index) ? false : true
+            }
+
+            /**
+              Yes, the following code could be done a lot smaller using a repeater with a model number of 4.
+              It would be cleaner but a lot harder to figure out what's wrong when something goos bad.
+
+              This code is meant to have a readable structure of how an hour is represented.
+            **/
+
+            // The first "15 minutes" are id one.
+            Rectangle
+            {
+                id: one
+                width: parent.width
+                x: root.leftTextOffset
+                height: 13
+            }
+
+            // We only paint the top grey line if it's the first hour (0.00) otherwise we don't need this line.
+            // Note, no need to anchor because this item is drawn after the "one" item and draws on top of it.
+            Rectangle
+            {
+                width: parent.width
+                x: root.leftTextOffset
+                height: 1
+                color: "silver"
+                visible: (index === 0) ? true : false
+            }
+
+            // The second 15 minutes (.15 till .30)
+            Rectangle
+            {
+                id: two
+                x: root.leftTextOffset
+                anchors.top: one.bottom
+                width: parent.width
+                height: 13
+            }
+
+            // Half hour seperator
+            Rectangle
+            {
+                anchors.bottom: two.bottom
+                x: root.leftTextOffset
+                width: parent.width
+                height: 1
+                color: "#E6E6E6"
+            }
+
+            // Third 15 minutes (.30 till .45)
+            Rectangle
+            {
+                id: three
+                x: root.leftTextOffset
+                anchors.top: two.bottom
+                width: parent.width
+                height: 13
+            }
+
+            // Fourth 15 minutes (.45 till .00)
+            Rectangle
+            {
+                id: four
+                x: root.leftTextOffset
+                anchors.top: three.bottom
+                width: parent.width
+                height: 13
+            }
+
+            // The bottom hour seperator. This seperator is always drawn and also serves as top hour seperator (after 0.00)
+            Rectangle
+            {
+                anchors.bottom: four.bottom
+                x: root.leftTextOffset
+                width: parent.width
+                height: 1
+                color: "silver"
+            }
+        }
+    }
+
     Flickable
     {
         anchors.fill: parent
-        contentWidth: col2.width
-        contentHeight: col2.height
+        contentWidth: contentList.width
+        contentHeight: contentList.height
+        interactive: false
+
+        MouseArea
+        {
+            anchors.fill: parent
+            anchors.leftMargin: root.leftTextOffset
+            z: 1
+            property bool activeSelection: false
+
+
+
+            function calculateNewPosition()
+            {
+                var rootItem = contentList.childAt(mouseX, mouseY)
+                if(rootItem === null)
+                {
+                    return
+                }
+
+                var tempY = mouseY % rootItem.height
+                var tempX = mouseX % rootItem.width
+                var item = rootItem.childAt(tempX, tempY)
+
+                if(item === null)
+                {
+                    return
+                }
+
+                if(item.height === 13)
+                {
+                    var newXPos = parent.x
+                    var newYPos = (mouseY - tempY) + (item.y - item.height) + 13
+
+                    return {x: newXPos, y: newYPos}
+                }
+            }
+
+            onPositionChanged:
+            {
+                var newPositions = calculateNewPosition()
+                if(newPositions)
+                {
+                    if(!activeSelection)
+                    {
+                        // Set our ugly anchor hacking element
+                        uglyAnchorHack.x = newPositions.x + root.leftTextOffset
+                        uglyAnchorHack.y = newPositions.y
+
+                        activeSelection = true
+                    }
+
+                    var tempHeight = Math.abs(newPositions.y - uglyAnchorHack.y)
+
+                    if(tempHeight === rowSelection.lastHeight)
+                    {
+                        // Same height, skip it.
+                        return
+                    }
+
+                    if((newPositions.y - uglyAnchorHack.y) >= 0 && rowSelection.state !== "topAchored")
+                    {
+                        rowSelection.state = "topAchored"
+                        console.log("Top anchored")
+                    }
+
+                    if((newPositions.y - uglyAnchorHack.y) < 0 && rowSelection.state !== "bottomAchored")
+                    {
+                        rowSelection.state = "bottomAchored"
+                        console.log("Bottom anchored")
+                    }
+
+                    if(tempHeight < 13)
+                    {
+                        tempHeight = 13
+                    }
+
+                    console.log(tempHeight)
+
+                    rowSelection.height = tempHeight
+                    rowSelection.lastHeight = tempHeight
+                }
+            }
+
+            onReleased:
+            {
+                rowSelection.state = "clearAnchors"
+                activeSelection = false
+            }
+        }
+
+        Rectangle
+        {
+            id: rowSelection
+            width: 100
+            height: 100
+            color: "red"
+            opacity: 0.5
+            z: 2
+
+            Behavior on opacity
+            {
+                NumberAnimation {}
+            }
+
+            states: [
+                State {
+                    name: "topAchored"
+                    AnchorChanges {
+                        target: rowSelection
+                        anchors.top: uglyAnchorHack.top
+                        anchors.left: uglyAnchorHack.left
+                    }
+                },
+                State {
+                    name: "bottomAchored"
+                    AnchorChanges {
+                        target: rowSelection
+                        anchors.bottom: uglyAnchorHack.bottom
+                        anchors.left: uglyAnchorHack.left
+                    }
+                },
+                State {
+                    name: "clearAnchors"
+                    AnchorChanges {
+                        target: rowSelection
+                        anchors.top: undefined
+                        anchors.bottom: undefined
+                        anchors.left: undefined
+                    }
+                    PropertyChanges { target: rowSelection; opacity: 1.0 }
+                }
+            ]
+
+            property int lastHeight: 0
+        }
+
+        Rectangle
+        {
+            id: uglyAnchorHack
+            color: "purple"
+            z: 100
+            width: 13
+            height: 13
+        }
 
         Column
         {
-            id: col2
+            id: contentList
 
             Repeater
             {
                 model: hourList
-                Rectangle
-                {
-                    height: 52
-                    width: root.width
-                    border.width: 0
-                    x:
-                    {
-                        if(hour.visible)
-                        {
-                            return hour.width
-                        }
-                        return 0
-                    }
-
-                    color: "#cccccc"
-
-                    Rectangle
-                    {
-                        id: hour
-                        width: 50
-                        x: -width
-
-                        color: "transparent"
-
-                        Text
-                        {
-                            anchors.centerIn: parent
-                            visible: (index === 0) ? false : true
-                            text: hour24
-                            font.italic: true
-                            font.pixelSize: 7
-                        }
-                    }
-
-                    Column
-                    {
-                        Repeater
-                        {
-                            model: 4
-
-                            Rectangle
-                            {
-                                height: 13
-                                width: root.width
-                                color: "white"
-
-                                Rectangle
-                                {
-                                    visible: index === 2
-                                    color: "silver"
-                                    height: 1
-                                    width: root.width
-                                }
-
-                                Rectangle
-                                {
-                                    visible: index === 0
-                                    color: "#cccccc"
-                                    height: 1
-                                    width: root.width
-                                }
-                            }
-                        }
-                    }
-                }
+                delegate: rowDelegate
             }
         }
+
     }
 }
-
-//        Column
-//        {
-//            id: col
-//            y: -26
-//            Repeater
-//            {
-//                model: hourList
-//                Rectangle
-//                {
-//                    height: 52
-//                    width: 50
-////                    border.width: 1
-//                    Text
-//                    {
-//                        anchors.verticalCenter: parent.verticalCenter
-//                        anchors.right: parent.right
-//                        text:
-//                        {
-//                            // Skip the first (00.00) text
-//                            if(index !== 0)
-//                            {
-////                                return hour24
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-//        Rectangle
-//        {
-//            id: dayHourView
-////            anchors.left: col.right
-////            anchors.right: root.right
-////            anchors.top: root.top
-////            anchors.bottom: root.bottom
-
-//            MouseArea
-//            {
-//                anchors.fill: parent
-//                hoverEnabled: true
-
-//                onPositionChanged:
-//                {
-//                    var rootItem = col2.childAt(mouseX, mouseY)
-//                    var tempHeight = mouseY % rootItem.height
-//                    var item = col2.childAt(mouseX, mouseY).childAt(0, 0).childAt(0, tempHeight)
-//                    item.color = "red"
-//                }
-
-//                onEntered:
-//                {
-////                    var rootItem = col2.childAt(mouseX, mouseY)
-////                    var tempHeight = mouseY % rootItem.height
-////                    var item = col2.childAt(mouseX, mouseY).childAt(0, 0).childAt(0, tempHeight)
-////                    item.color = "red"
-////                    parent.color = "red"
-//                }
-//                onExited:
-//                {
-////                    var rootItem = col2.childAt(mouseX, mouseY)
-////                    var tempHeight = mouseY % rootItem.height
-////                    var item = col2.childAt(mouseX, mouseY).childAt(0, 0).childAt(0, tempHeight)
-////                    item.color = "white"
-////                    parent.color = "white"
-//                }
-//                onClicked:
-//                {
-//                    var rootItem = col2.childAt(mouseX, mouseY)
-//                    var tempHeight = mouseY % rootItem.height
-//                    var item = col2.childAt(mouseX, mouseY).childAt(0, 0).childAt(0, tempHeight)
-//                    item.color = "red"
-
-
-
-
-//                    console.log("Click... X: " + mouseX + " Y: " + mouseY + " ID: " + item.id)
-////                    console.log("Click... X: " + tempWidth + " Y: " + tempWidth + " ID: " + item.id)
-//                    console.log("Item Width: " + item.width + ", height: " + item.height)
-//                    console.log(item)
-//                }
-//            }
-
-//        }
-
-
-//    }
-//}
