@@ -1,4 +1,3 @@
-// import QtQuick 1.0 // to target S60 5th Edition or Maemo 5
 import QtQuick 1.1
 
 Rectangle
@@ -6,42 +5,28 @@ Rectangle
     width: 800
     height: 600
 
-//    Grid
+//    CalendarYear
 //    {
 //        anchors.centerIn: parent
-//        rows: 3
-//        columns: 4
-//        spacing: 10
-//        Repeater
-//        {
-//            model: 12
-//            CalendarMonth
-//            {
-//                width: 250
-//                height: 175
-//                customMonth: index + 1
-//                date: year + "-" + customMonth
-//                state: "yearOverview"
-//            }
-//        }
+//        //todo: this one should just fit in a given width/height.
 //    }
-
-//    CalendarMonth
-//    {
-//        anchors.fill: parent
-//        state: "monthOverview"
-//    }
-
 
     CalendarMonth
     {
-        anchors.centerIn: parent
-        width: 250
-        height: 175
-        state: "monthOverviewClean"
+        anchors.fill: parent
+        state: "monthOverview"
     }
 
-//    CalendarDay
+
+//    CalendarMonth
+//    {
+//        anchors.centerIn: parent
+//        width: 250
+//        height: 175
+//        state: "monthOverviewClean"
+//    }
+
+//    CalendarDayV2
 //    {
 //        anchors.fill: parent
 //    }
