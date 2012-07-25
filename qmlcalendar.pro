@@ -9,7 +9,8 @@ QML_IMPORT_PATH =
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
     qmonth.cpp \
-    qmonthmodel.cpp
+    qmonthmodel.cpp \
+    qcaleventmodel.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -17,4 +18,5 @@ qtcAddDeployment()
 
 HEADERS += \
     qmonth.h \
-    qmonthmodel.h
+    qmonthmodel.h \
+    qcaleventmodel.h

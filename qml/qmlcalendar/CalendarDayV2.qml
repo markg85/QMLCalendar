@@ -267,6 +267,60 @@ Rectangle
             visible: false
         }
 
+        function calculateTimePosition(hours, minutes)
+        {
+            var newYPos = 0;
+            var pixelsPerHour = 54
+            var percentageMinutes = (minutes / 59)
+            newYPos += (hours * pixelsPerHour) + (pixelsPerHour * percentageMinutes)
+
+            return newYPos
+        }
+
+        Repeater
+        {
+            model: eventModel
+
+            CalendarDayEvent
+            {
+                Component.onCompleted:
+                {
+                    var timeStart = String(Start)
+                    var splittedStartTime = timeStart.split(":")
+
+                    var timeEnd = String(End)
+                    var splittedEndTime = timeEnd.split(":")
+
+                    var startPosition = container.calculateTimePosition(splittedStartTime[0], splittedStartTime[1])
+                    var endPosition = container.calculateTimePosition(splittedEndTime[0], splittedEndTime[1])
+                    var newHeight = Math.abs(endPosition - startPosition)
+                    y = startPosition
+                    height = newHeight
+                    visible = true
+
+                    console.log(".... someone ....")
+                }
+
+                width: container.width
+                x: root.widthOffset
+            }
+
+//            Rectangle
+//            {
+//                width: 50
+//                height: 50
+//                color: "red"
+
+//                Component.onCompleted:
+//                {
+//                    var dateTest = String(End)
+//                    var splittedTime = dateTest.split(":")
+//                    console.log(container.calculateTimePosition(splittedTime[0], splittedTime[1]))
+//                }
+//            }
+        }
+
+
         Rectangle
         {
             function calculateTimeRulerPosition()
@@ -315,7 +369,7 @@ Rectangle
 
             function calculateCellInDay()
             {
-                if(mouseY < 0) return;
+                if(mouseY < 0 || mouseY > height) return;
 
                 var numberOfHours = Math.floor(mouseY / 54)
                 var remainingPosition = mouseY % 54
