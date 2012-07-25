@@ -13,18 +13,20 @@ Item
 
     Rectangle
     {
+        id: content
         anchors.fill: parent
         radius: 5
         border.width: 2
-        border.color: "grey"
+        border.color: "#cccccc"
         color: "#7dcccccc"
+        visible: parent.visible
         clip: true
 
         Text
         {
             x: 5
             y: 5
-            text: "New Event"
+//            text: "New Event"
         }
     }
 }

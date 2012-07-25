@@ -177,131 +177,13 @@ Rectangle
     }
 
 
-    MouseArea
-    {
-        property int initNumOfHours: 0
-        property int initNumOfQuarters: 0
-
-        property int lastNumOfHours: 0
-        property int lastNumOfQuarters: 0
-
-        property bool lastAnchorTop: false
-
-        function calculateCellInDay()
-        {
-            if(mouseY < 0) return;
-
-            var numberOfHours = Math.floor(mouseY / 54)
-            var remainingPosition = mouseY % 54
-
-
-            if(remainingPosition <= 27) // 2x13 + 1 for the top border
-            {
-               remainingPosition -= 1 // subtract 1 since the top border doesn't count
-            }
-            else if(remainingPosition > 27) // this number included the top border and the half hour divider
-            {
-                remainingPosition -= 2 // subtract 2, 1 for the top border, one for the half hour divider
-            }
-
-            var numberOfQuarters = Math.floor(remainingPosition / 13)
-
-//            if(lastNumOfHours === numberOfHours && lastNumOfQuarters === numberOfQuarters)
-//            {
-//                console.log("-- 001")
-//                return
-//            }
-
-            var anchoringTop = false
-            if(numberOfQuarters < 0) return;
-
-            if(numberOfHours > initNumOfHours)
-            {
-                anchoringTop = true
-            }
-            else if(numberOfHours == initNumOfHours && numberOfQuarters > initNumOfQuarters)
-            {
-                anchoringTop = true
-            }
-            else if(numberOfHours == initNumOfHours && numberOfQuarters < initNumOfQuarters)
-            {
-                anchoringTop = false
-            }
-            else
-            {
-                anchoringTop = false
-            }
-
-            if(lastAnchorTop !== anchoringTop)
-            {
-                container.anchorTop(anchoringTop)
-            }
-
-            lastNumOfHours = numberOfHours
-            lastNumOfQuarters = numberOfQuarters
-            lastAnchorTop = anchoringTop
-
-
-//            console.log(initNumOfHours + " --- " + numberOfHours)
-
-
-            return {numOfHours: numberOfHours, numOfQuarters: numberOfQuarters, anchoringTop: anchoringTop}
-        }
-
-        acceptedButtons: Qt.LeftButton
-        width: container.width
-        x: root.widthOffset
-        height: data.height
-        onPositionChanged:
-        {
-            var cellData = calculateCellInDay()
-            if(cellData)
-            {
-                var placementPosition = container.calculatePosition(cellData.numOfHours, cellData.numOfQuarters)
-                var initPosition = container.calculatePosition(initNumOfHours, initNumOfQuarters)
-                var newHeight = Math.abs(placementPosition - initPosition)
-
-                // the added 13 is to select the curent hoverinh row.
-                newCalendarEvent.height = 13 + newHeight
-
-            }
-        }
-
-        onPressed:
-        {
-            console.log("pressed")
-            var cellData = calculateCellInDay()
-            if(cellData)
-            {
-                var placementPosition = container.calculatePosition(cellData.numOfHours, cellData.numOfQuarters)
-                initNumOfHours = cellData.numOfHours
-                initNumOfQuarters = cellData.numOfQuarters
-                placeholderHack.y = placementPosition
-                container.anchorTop(true)
-                placeholderHack.visible = true
-                newCalendarEvent.height = 13
-            }
-
-        }
-
-        onReleased:
-        {
-            console.log("released")
-            placeholderHack.visible = false
-            initNumOfHours = 0
-            initNumOfQuarters = 0
-            container.anchorRelease()
-        }
-
-    }
-
     Flickable
     {
         id: container
         anchors.fill: parent
         contentWidth: data.width
         contentHeight: data.height
-        interactive: false
+        flickableDirection: Flickable.VerticalFlick
 
         signal anchorTop(bool top)
         signal anchorRelease()
@@ -364,11 +246,13 @@ Rectangle
             }
         }
 
+        // this element MUST have the same height as a 15 minutes (1 quarter) have!
         Rectangle
         {
             id: placeholderHack
             width: 13
             height: 13
+            radius: 6.5
             x: root.widthOffset
             color: "purple"
             visible: false
@@ -380,6 +264,7 @@ Rectangle
             width: parent.width
             height: 13
             x: root.widthOffset
+            visible: false
         }
 
         Rectangle
@@ -410,5 +295,124 @@ Rectangle
             x: root.widthOffset
             y: calculateTimeRulerPosition()
         }
+
+        MouseArea
+        {
+            property int initNumOfHours: 0
+            property int initNumOfQuarters: 0
+
+            property int lastNumOfHours: 0
+            property int lastNumOfQuarters: 0
+
+            property bool lastAnchorTop: false
+
+            acceptedButtons: Qt.LeftButton
+            width: parent.width
+            height: parent.height
+            x: root.widthOffset
+            enabled: true
+            preventStealing: true
+
+            function calculateCellInDay()
+            {
+                if(mouseY < 0) return;
+
+                var numberOfHours = Math.floor(mouseY / 54)
+                var remainingPosition = mouseY % 54
+
+
+                if(remainingPosition <= 27) // 2x13 + 1 for the top border
+                {
+                   remainingPosition -= 1 // subtract 1 since the top border doesn't count
+                }
+                else if(remainingPosition > 27) // this number included the top border and the half hour divider
+                {
+                    remainingPosition -= 2 // subtract 2, 1 for the top border, one for the half hour divider
+                }
+
+                var numberOfQuarters = Math.floor(remainingPosition / 13)
+
+    //            if(lastNumOfHours === numberOfHours && lastNumOfQuarters === numberOfQuarters)
+    //            {
+    //                console.log("-- 001")
+    //                return
+    //            }
+
+                var anchoringTop = lastAnchorTop
+                if(numberOfQuarters < 0) return;
+
+                if(numberOfHours > initNumOfHours)
+                {
+                    anchoringTop = true
+                }
+                else if(numberOfHours == initNumOfHours && numberOfQuarters >= initNumOfQuarters)
+                {
+                    anchoringTop = true
+                }
+                else if(numberOfHours == initNumOfHours && numberOfQuarters < initNumOfQuarters)
+                {
+                    anchoringTop = false
+                }
+                else
+                {
+                    anchoringTop = false
+                }
+
+                if(lastAnchorTop !== anchoringTop)
+                {
+                    container.anchorTop(anchoringTop)
+                }
+
+                lastNumOfHours = numberOfHours
+                lastNumOfQuarters = numberOfQuarters
+                lastAnchorTop = anchoringTop
+
+                return {numOfHours: numberOfHours, numOfQuarters: numberOfQuarters, anchoringTop: anchoringTop}
+            }
+
+            onPositionChanged:
+            {
+                var cellData = calculateCellInDay()
+                if(cellData)
+                {
+                    var placementPosition = container.calculatePosition(cellData.numOfHours, cellData.numOfQuarters)
+                    var initPosition = container.calculatePosition(initNumOfHours, initNumOfQuarters)
+                    var newHeight = Math.abs(placementPosition - initPosition)
+
+                    // the added 13 is to select the curent hoverinh row.
+                    newCalendarEvent.height = 13 + newHeight
+                }
+            }
+
+            onPressed:
+            {
+                console.log("pressed")
+                var cellData = calculateCellInDay()
+                if(cellData)
+                {
+                    var placementPosition = container.calculatePosition(cellData.numOfHours, cellData.numOfQuarters)
+                    initNumOfHours = cellData.numOfHours
+                    initNumOfQuarters = cellData.numOfQuarters
+                    placeholderHack.y = placementPosition
+                    container.anchorTop(true)
+                    placeholderHack.visible = true
+                    newCalendarEvent.visible = true
+                    newCalendarEvent.height = 13
+                }
+
+            }
+
+            onReleased:
+            {
+                console.log("released")
+                placeholderHack.visible = false
+                initNumOfHours = 0
+                initNumOfQuarters = 0
+                container.anchorRelease()
+            }
+
+        }
     }
+
 }
+

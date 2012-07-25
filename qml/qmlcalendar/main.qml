@@ -11,11 +11,11 @@ Rectangle
 //        //todo: this one should just fit in a given width/height.
 //    }
 
-    CalendarMonth
-    {
-        anchors.fill: parent
-        state: "monthOverview"
-    }
+//    CalendarMonth
+//    {
+//        anchors.fill: parent
+//        state: "monthOverview"
+//    }
 
 
 //    CalendarMonth
@@ -26,8 +26,8 @@ Rectangle
 //        state: "monthOverviewClean"
 //    }
 
-//    CalendarDayV2
-//    {
-//        anchors.fill: parent
-//    }
+    CalendarDayV2
+    {
+        anchors.fill: parent
+    }
 }
