@@ -185,6 +185,8 @@ void QMonth::calculateMonth()
     QDate previousMonthDate(yearCalc, monthCalc, 1);
     int dayNumber = 1;
 
+    QList<QStandardItem*> items;
+
     for(int i = 1; i <= NUMBER_OF_DAYS_IN_CAL; i++)
     {
         bool previousMonth = false;
@@ -214,9 +216,11 @@ void QMonth::calculateMonth()
         item->setData(QVariant(currentMonth), QMonthModel::CurrentMonth);
         item->setData(QVariant(dayNumber), QMonthModel::DayNumber);
 
-        m_model.appendRow(item);
+        items << item;
 
     }
+
+    m_model.appendColumn(items);
 
     emit modelChanged();
 }

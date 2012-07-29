@@ -298,7 +298,7 @@ Rectangle
                     height = newHeight
                     visible = true
 
-                    console.log(".... someone ....")
+                    console.log(".... someone .... " + index)
                 }
 
                 width: container.width
