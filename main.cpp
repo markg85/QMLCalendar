@@ -3,6 +3,7 @@
 #include "qmonth.h"
 #include "qmonthmodel.h"
 #include "qcaleventmodel.h"
+#include "utils.h"
 #include <QDebug>
 
 #include <QDeclarativeContext>
@@ -65,8 +66,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     eventModel.appendColumn(list);
 
     QmlApplicationViewer viewer;
+    Utils utils(&viewer);
     QDeclarativeContext *ctxt = viewer.rootContext();
     ctxt->setContextProperty("eventModel", &eventModel);
+    ctxt->setContextProperty("utils", &utils);
 
     qmlRegisterType<QMonthModel>();
     qmlRegisterType<QMonth>("CalendarComponents", 1, 0, "QmlMonth");

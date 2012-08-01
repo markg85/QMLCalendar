@@ -10,7 +10,8 @@ QML_IMPORT_PATH =
 SOURCES += main.cpp \
     qmonth.cpp \
     qmonthmodel.cpp \
-    qcaleventmodel.cpp
+    qcaleventmodel.cpp \
+    utils.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -19,4 +20,5 @@ qtcAddDeployment()
 HEADERS += \
     qmonth.h \
     qmonthmodel.h \
-    qcaleventmodel.h
+    qcaleventmodel.h \
+    utils.h

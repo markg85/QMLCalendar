@@ -301,23 +301,19 @@ Rectangle
                     console.log(".... someone .... " + index)
                 }
 
+                onDisableMousearea:
+                {
+                    encapsulatingMouseArea.enabled = false
+                }
+
+                onEnableMousearea:
+                {
+                    encapsulatingMouseArea.enabled = true
+                }
+
                 width: container.width
                 x: root.widthOffset
             }
-
-//            Rectangle
-//            {
-//                width: 50
-//                height: 50
-//                color: "red"
-
-//                Component.onCompleted:
-//                {
-//                    var dateTest = String(End)
-//                    var splittedTime = dateTest.split(":")
-//                    console.log(container.calculateTimePosition(splittedTime[0], splittedTime[1]))
-//                }
-//            }
         }
 
 
@@ -365,6 +361,7 @@ Rectangle
             height: parent.height
             x: root.widthOffset
             enabled: true
+            id: encapsulatingMouseArea
             preventStealing: true
 
             function calculateCellInDay()

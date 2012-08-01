@@ -11,6 +11,9 @@ Item
     // End time
     property string endTime: "00:00"             // set externally. Must be set in HH:MM in 24 h format (00:00 - 23:59 max)
 
+    signal disableMousearea()
+    signal enableMousearea()
+
     Rectangle
     {
         id: content
@@ -21,6 +24,58 @@ Item
         color: "#7dcccccc"
         visible: parent.visible
         clip: true
+
+        MouseArea
+        {
+            width: parent.width
+            height: 5
+            hoverEnabled: true
+            preventStealing: true
+
+            onEntered:
+            {
+                utils.setCursor(Qt.SizeVerCursor)
+                disableMousearea()
+            }
+
+            onExited:
+            {
+                utils.setCursor(Qt.ArrowCursor)
+                enableMousearea()
+            }
+
+            onPressed:
+            {
+                console.log("click top resizer")
+            }
+        }
+
+        MouseArea
+        {
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 5
+            hoverEnabled: true
+            preventStealing: true
+
+            onEntered:
+            {
+                utils.setCursor(Qt.SizeVerCursor)
+                disableMousearea()
+            }
+
+            onExited:
+            {
+                utils.setCursor(Qt.ArrowCursor)
+                enableMousearea()
+            }
+
+            onPressed:
+            {
+                console.log("click bottom resizer " + Qt.SizeVerCursor)
+
+            }
+        }
 
         Text
         {
