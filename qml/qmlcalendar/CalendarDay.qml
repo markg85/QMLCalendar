@@ -266,6 +266,7 @@ Rectangle
             enabled: true
             id: encapsulatingMouseArea
             preventStealing: true
+            property int yStartPosition: 0
 
             signal enableArea()
             signal disableArea()
@@ -282,9 +283,14 @@ Rectangle
 
             onPressed:
             {
-//                placeholderHack.y = container.mouseToPosition(mouseY)
+                yStartPosition = mouseY
                 newCalendarEvent.y = container.mouseToPosition(mouseY)
                 newCalendarEvent.visible = true
+            }
+
+            onPositionChanged:
+            {
+                newCalendarEvent.height = (mouseY - yStartPosition) + 5
             }
 
             onReleased:
@@ -326,8 +332,7 @@ Rectangle
         {
             id: newCalendarEvent
             width: parent.width
-//            height: quarterHeight
-            height: 100
+            height: quarterHeight
             x: root.widthOffset
             visible: false
         }
