@@ -78,7 +78,6 @@ Item
         width: parent.width
         height: 20
         y: cell.height - height
-        opacity: 0.5
         color: handleBottomMouseArea.pressed ? "green" : "yellow"
 
         MouseArea
