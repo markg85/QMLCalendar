@@ -2,86 +2,96 @@ import QtQuick 1.1
 
 Item
 {
-    // Note, the start.. and end... properties are here for storage purpose only.
-    // It's actually being stored in the C++ side which in turn is stored in Akonadi?
-
-    // Start time
-    property string startTime: "00:00"           // set externally. Must be set in HH:MM in 24 h format (00:00 - 23:59 max)
-
-    // End time
-    property string endTime: "00:00"             // set externally. Must be set in HH:MM in 24 h format (00:00 - 23:59 max)
-
-    signal disableMousearea()
-    signal enableMousearea()
+    id: cell
+//    opacity: 0.5
 
     Rectangle
     {
         id: content
-        anchors.fill: parent
-        radius: 5
-        border.width: 2
-        border.color: "#cccccc"
-        color: "#7dcccccc"
-        visible: parent.visible
-        clip: true
+        property bool handleOnTop: true
+        property bool lastConfig: true
+        anchors.top: topHandle.top
+        anchors.bottom: bottomHandle.bottom
+        width: parent.width
+        color: contentMouseArea.pressed ? "orange" : "blue"
 
         MouseArea
         {
-            width: parent.width
-            height: 5
-            hoverEnabled: true
-            preventStealing: true
+            id: contentMouseArea
+            anchors.fill: parent
+            drag.target: cell
+            drag.axis: Drag.YAxis
+        }
 
-            onEntered:
+        onHandleOnTopChanged:
+        {
+            if (handleOnTop)
             {
-                utils.setCursor(Qt.SizeVerCursor)
-                disableMousearea()
+                anchors.top = topHandle.top;
+                anchors.bottom = bottomHandle.bottom;
             }
-
-            onExited:
+            else
             {
-                utils.setCursor(Qt.ArrowCursor)
-                enableMousearea()
-            }
-
-            onPressed:
-            {
-                console.log("click top resizer")
+                anchors.bottom = topHandle.bottom;
+                anchors.top = bottomHandle.bottom;
             }
         }
+
+        onHeightChanged:
+        {
+            // the lastConfig flag is a workaround to avoid the slot
+            // onHandleOnTopChanged to be executed more than one time
+            // when the mouse is moved too fast during the dragging.
+            if (height <= 0 && lastConfig === handleOnTop)
+            {
+                handleOnTop = !handleOnTop;
+                lastConfig = handleOnTop;
+            }
+        }
+    }
+
+    Rectangle
+    {
+        id: topHandle
+        width: parent.width
+        height: 20
+        color: handleTopMouseArea.pressed ? "orange" : "red"
 
         MouseArea
         {
-            anchors.bottom: parent.bottom
-            width: parent.width
-            height: 5
-            hoverEnabled: true
-            preventStealing: true
+            id: handleTopMouseArea
+            anchors.fill: parent
+            drag.target: topHandle
+            drag.axis: Drag.YAxis
 
-            onEntered:
+            onReleased:
             {
-                utils.setCursor(Qt.SizeVerCursor)
-                disableMousearea()
-            }
-
-            onExited:
-            {
-                utils.setCursor(Qt.ArrowCursor)
-                enableMousearea()
-            }
-
-            onPressed:
-            {
-                console.log("click bottom resizer " + Qt.SizeVerCursor)
-
+                // Note: the time could also be calculated based on the
+                console.log("Handle is released. Recalculate the time of this event.")
             }
         }
+    }
 
-        Text
+    Rectangle
+    {
+        id: bottomHandle
+        width: parent.width
+        height: 20
+        y: cell.height - height
+        color: handleBottomMouseArea.pressed ? "green" : "yellow"
+
+        MouseArea
         {
-            x: 5
-            y: 5
-//            text: "New Event"
+            id: handleBottomMouseArea
+            anchors.fill: parent
+            drag.target: bottomHandle
+            drag.axis: Drag.YAxis
+
+            onReleased:
+            {
+                // Note: the time could also be calculated based on the
+                console.log("Handle is released. Recalculate the time of this event.")
+            }
         }
     }
 }

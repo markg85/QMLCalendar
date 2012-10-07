@@ -4,7 +4,15 @@ Rectangle
 {
     id: root
 
-    property int leftTextOffset: 75
+    property int widthOffset: 50
+
+    // height properties
+    property int hourHeight: (quarterHeight * 4) + halfHourSeperatorHeight + hourSeperatorHeight
+    property int quarterHeight: 13
+    property int halfHourHeight: quarterHeight * 2 // just convenience
+    property int halfHourSeperatorHeight: 1
+    property int hourSeperatorHeight: 1
+
 
     ListModel
     {
@@ -110,267 +118,247 @@ Rectangle
 
     Component
     {
-        id: rowDelegate
-
-
+        id: hourDelegate
         Rectangle
         {
-            width: root.width
-            height: 52
+            width: root.width - root.widthOffset
+            height: root.hourHeight // 13 height for every 15 minutes (4x = 52). + 1 for the top line + 1 for the half hour devider. Adds up to 54
             color: "transparent"
 
-            property int leftTextOffset: root.leftTextOffset
-
-            Text
-            {
-                width: root.leftTextOffset
-                anchors.top: one.top
-                text: hour24
-                anchors.topMargin: - (font.pointSize / 2) - 3 // i have to add "-3" to make it look nicely centered.. Why?
-                horizontalAlignment: Text.AlignRight
-                x: -5
-                visible: (index === 0 || hourList.count === index) ? false : true
-            }
-
-            /**
-              Yes, the following code could be done a lot smaller using a repeater with a model number of 4.
-              It would be cleaner but a lot harder to figure out what's wrong when something goos bad.
-
-              This code is meant to have a readable structure of how an hour is represented.
-            **/
-
-            // The first "15 minutes" are id one.
             Rectangle
             {
-                id: one
-                width: parent.width
-                x: root.leftTextOffset
-                height: 13
+                width: root.widthOffset
+                x: -(root.widthOffset)
+                y: -(height / 2)
+                visible: index !== 0
+
+                Text
+                {
+                    anchors.fill: parent
+                    horizontalAlignment: Text.AlignRight
+                    verticalAlignment: Text.AlignVCenter
+                    anchors.rightMargin: 5
+                    font.italic: true
+                    font.pointSize: 9
+                    text: hour24
+                }
             }
 
-            // We only paint the top grey line if it's the first hour (0.00) otherwise we don't need this line.
-            // Note, no need to anchor because this item is drawn after the "one" item and draws on top of it.
-            Rectangle
+            Column
             {
-                width: parent.width
-                x: root.leftTextOffset
-                height: 1
-                color: "silver"
-                visible: (index === 0) ? true : false
-            }
+                anchors.fill: parent
 
-            // The second 15 minutes (.15 till .30)
-            Rectangle
-            {
-                id: two
-                x: root.leftTextOffset
-                anchors.top: one.bottom
-                width: parent.width
-                height: 13
-            }
+                // Top silver line
+                Rectangle
+                {
+                    height: hourSeperatorHeight
+                    width: parent.width
+                    color: "silver"
+                }
 
-            // Half hour seperator
-            Rectangle
-            {
-                anchors.bottom: two.bottom
-                x: root.leftTextOffset
-                width: parent.width
-                height: 1
-                color: "#E6E6E6"
-            }
+                // first half hour
+                Rectangle
+                {
+                    height: halfHourHeight
+                    width: parent.width
+                    color: "white"
+                }
 
-            // Third 15 minutes (.30 till .45)
-            Rectangle
-            {
-                id: three
-                x: root.leftTextOffset
-                anchors.top: two.bottom
-                width: parent.width
-                height: 13
-            }
+                // half hour devider
+                Rectangle
+                {
+                    height: halfHourSeperatorHeight
+                    width: parent.width
+                    color: "#E6E6E6"
+                }
 
-            // Fourth 15 minutes (.45 till .00)
-            Rectangle
-            {
-                id: four
-                x: root.leftTextOffset
-                anchors.top: three.bottom
-                width: parent.width
-                height: 13
-            }
-
-            // The bottom hour seperator. This seperator is always drawn and also serves as top hour seperator (after 0.00)
-            Rectangle
-            {
-                anchors.bottom: four.bottom
-                x: root.leftTextOffset
-                width: parent.width
-                height: 1
-                color: "silver"
+                // last half hour
+                Rectangle
+                {
+                    height: halfHourHeight
+                    width: parent.width
+                    color: "white"
+                }
             }
         }
     }
 
+
     Flickable
     {
+        id: container
         anchors.fill: parent
-        contentWidth: contentList.width
-        contentHeight: contentList.height
-        interactive: false
+        contentWidth: data.width
+        contentHeight: data.height
+        flickableDirection: Flickable.VerticalFlick
+
+        Column
+        {
+            id: data
+            width: root.width - root.widthOffset
+            x: root.widthOffset
+            Repeater
+            {
+                model: hourList
+                delegate: hourDelegate
+            }
+
+            // We only added top lines, so the last entry has no bottom line. This one fills that up.
+            // Bottom silver line
+            Rectangle
+            {
+                height: 1
+                width: parent.width
+                color: "silver"
+            }
+        }
+
+        function timeToPosition(hours, minutes)
+        {
+            var newYPos = 0;
+            var percentageMinutes = (minutes / 59)
+            newYPos += (hours * hourHeight) + (hourHeight * percentageMinutes)
+
+            return newYPos
+        }
+
+        function timeBlockToPosition(numberOfHours, numberOfQuarters)
+        {
+            var hoursPos = numberOfHours * hourHeight
+            var quarterPos = numberOfQuarters * quarterHeight
+
+            if(numberOfQuarters < 2)
+            {
+                quarterPos += 1
+            }
+            else if(numberOfQuarters >= 2)
+            {
+                quarterPos += 2
+            }
+
+            return hoursPos + quarterPos
+        }
+
+        function mouseToTimePosition(mouseY)
+        {
+            if(mouseY < 0 || mouseY > data.height) return;
+
+            var numberOfHours = Math.floor(mouseY / hourHeight)
+            var remainingPosition = mouseY % hourHeight
+            var numberOfQuarters = Math.floor(remainingPosition / quarterHeight)
+
+            return {numOfHours: numberOfHours, numOfQuarters: numberOfQuarters}
+        }
+
+        // convenient function so that i only need one call to get the position
+        function mouseToPosition(mouseY)
+        {
+            var cellData = mouseToTimePosition(mouseY)
+            return timeBlockToPosition(cellData.numOfHours, cellData.numOfQuarters)
+        }
 
         MouseArea
         {
-            anchors.fill: parent
-            anchors.leftMargin: root.leftTextOffset
-            z: 1
-            property bool activeSelection: false
+            acceptedButtons: Qt.LeftButton
+            width: parent.width
+            height: parent.height
+            x: root.widthOffset
+            enabled: true
+            id: encapsulatingMouseArea
+            preventStealing: true
 
+            signal enableArea()
+            signal disableArea()
 
-
-            function calculateNewPosition()
+            onEnableArea:
             {
-                var rootItem = contentList.childAt(mouseX, mouseY)
-                if(rootItem === null)
-                {
-                    return
-                }
-
-                var tempY = mouseY % rootItem.height
-                var tempX = mouseX % rootItem.width
-                var item = rootItem.childAt(tempX, tempY)
-
-                if(item === null)
-                {
-                    return
-                }
-
-                if(item.height === 13)
-                {
-                    var newXPos = parent.x
-                    var newYPos = (mouseY - tempY) + (item.y - item.height) + 13
-
-                    return {x: newXPos, y: newYPos}
-                }
+                enabled = true
             }
 
-            onPositionChanged:
+            onDisableArea:
             {
-                var newPositions = calculateNewPosition()
-                if(newPositions)
-                {
-                    if(!activeSelection)
-                    {
-                        // Set our ugly anchor hacking element
-                        uglyAnchorHack.x = newPositions.x + root.leftTextOffset
-                        uglyAnchorHack.y = newPositions.y
+                enabled = false
+            }
 
-                        activeSelection = true
-                    }
-
-                    var tempHeight = Math.abs(newPositions.y - uglyAnchorHack.y)
-
-                    if(tempHeight === rowSelection.lastHeight)
-                    {
-                        // Same height, skip it.
-                        return
-                    }
-
-                    if((newPositions.y - uglyAnchorHack.y) >= 0 && rowSelection.state !== "topAchored")
-                    {
-                        rowSelection.state = "topAchored"
-                        console.log("Top anchored")
-                    }
-
-                    if((newPositions.y - uglyAnchorHack.y) < 0 && rowSelection.state !== "bottomAchored")
-                    {
-                        rowSelection.state = "bottomAchored"
-                        console.log("Bottom anchored")
-                    }
-
-                    if(tempHeight < 13)
-                    {
-                        tempHeight = 13
-                    }
-
-                    console.log(tempHeight)
-
-                    rowSelection.height = tempHeight
-                    rowSelection.lastHeight = tempHeight
-                }
+            onPressed:
+            {
+//                placeholderHack.y = container.mouseToPosition(mouseY)
+                newCalendarEvent.y = container.mouseToPosition(mouseY)
+                newCalendarEvent.visible = true
             }
 
             onReleased:
             {
-                rowSelection.state = "clearAnchors"
-                activeSelection = false
+
             }
         }
 
-        Rectangle
+        Repeater
         {
-            id: rowSelection
-            width: 100
-            height: 100
-            color: "red"
-            opacity: 0.5
-            z: 2
+            model: eventModel
 
-            Behavior on opacity
+            CalendarDayEvent
             {
-                NumberAnimation {}
-            }
+                Component.onCompleted:
+                {
+                    var timeStart = String(Start)
+                    var splittedStartTime = timeStart.split(":")
 
-            states: [
-                State {
-                    name: "topAchored"
-                    AnchorChanges {
-                        target: rowSelection
-                        anchors.top: uglyAnchorHack.top
-                        anchors.left: uglyAnchorHack.left
-                    }
-                },
-                State {
-                    name: "bottomAchored"
-                    AnchorChanges {
-                        target: rowSelection
-                        anchors.bottom: uglyAnchorHack.bottom
-                        anchors.left: uglyAnchorHack.left
-                    }
-                },
-                State {
-                    name: "clearAnchors"
-                    AnchorChanges {
-                        target: rowSelection
-                        anchors.top: undefined
-                        anchors.bottom: undefined
-                        anchors.left: undefined
-                    }
-                    PropertyChanges { target: rowSelection; opacity: 1.0 }
+                    var timeEnd = String(End)
+                    var splittedEndTime = timeEnd.split(":")
+
+                    var startPosition = container.timeToPosition(splittedStartTime[0], splittedStartTime[1])
+                    var endPosition = container.timeToPosition(splittedEndTime[0], splittedEndTime[1])
+                    var newHeight = Math.abs(endPosition - startPosition)
+                    y = startPosition
+                    height = newHeight
+                    visible = true
+
+                    console.log("Index: " + index)
                 }
-            ]
 
-            property int lastHeight: 0
+                width: container.width
+                x: root.widthOffset
+            }
+        }
+
+        CalendarDayEvent
+        {
+            id: newCalendarEvent
+            width: parent.width
+//            height: quarterHeight
+            height: 100
+            x: root.widthOffset
+            visible: false
         }
 
         Rectangle
         {
-            id: uglyAnchorHack
-            color: "purple"
-            z: 100
-            width: 13
-            height: 13
-        }
+            height: 1
+            width: parent.width
+            color: "red"
+            x: root.widthOffset
+            y: calculateTimeRulerPosition()
 
-        Column
-        {
-            id: contentList
-
-            Repeater
+            function calculateTimeRulerPosition()
             {
-                model: hourList
-                delegate: rowDelegate
+                var currentTime = new Date()
+                var newYPos = 0;
+                var pixelsPerHour = 54
+                var hours = currentTime.getHours()
+                var percentageMinutes = (currentTime.getMinutes() / 59)
+                newYPos += (hours * pixelsPerHour) + (pixelsPerHour * percentageMinutes)
+
+                return newYPos
+            }
+
+            Timer
+            {
+                interval: 60000 // one minute
+                running: true
+                repeat: true
+                onTriggered: parent.y = parent.calculateTimeRulerPosition()
             }
         }
-
     }
 }
