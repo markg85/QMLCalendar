@@ -285,6 +285,7 @@ Rectangle
             {
                 yStartPosition = mouseY
                 newCalendarEvent.y = container.mouseToPosition(mouseY)
+                newCalendarEvent.height = quarterHeight
                 newCalendarEvent.visible = true
             }
 
