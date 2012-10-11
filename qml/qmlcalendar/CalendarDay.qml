@@ -23,6 +23,7 @@ Rectangle
             hour12: "12:00"
         }
         ListElement {
+
             hour24: "01:00"
             hour12: "1:00"
         }

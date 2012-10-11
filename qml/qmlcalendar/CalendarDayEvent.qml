@@ -5,11 +5,13 @@ Item
     id: cell
 //    opacity: 0.5
 
+
     Rectangle
     {
         id: content
         property bool handleOnTop: true
         property bool lastConfig: true
+
         anchors.top: topHandle.top
         anchors.bottom: bottomHandle.bottom
         width: parent.width
@@ -21,6 +23,15 @@ Item
             anchors.fill: parent
             drag.target: cell
             drag.axis: Drag.YAxis
+            hoverEnabled: true
+            onEntered:
+            {
+                cell.z = 1
+            }
+            onExited:
+            {
+                cell.z = 0
+            }
         }
 
         onHandleOnTopChanged:
