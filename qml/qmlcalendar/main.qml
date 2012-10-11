@@ -26,7 +26,11 @@ Rectangle
 //        state: "monthOverviewClean"
 //    }
 
-    CalendarDay
+//    CalendarDay
+//    {
+//        anchors.fill: parent
+//    }
+    Overview
     {
         anchors.fill: parent
     }
