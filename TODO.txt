@@ -1,0 +1,15 @@
+Possible TODO items:
+---------------------
+
+
+- The month view can be more fluid when resizing.
+- The year view needs to be rewritten. The current one has a lot of config options - which is nice! However, it is not as easy 
+as it could be to simply fix something... Not sure yet how to fix this.
+- Figure out a way to cleanly add the other calendar subjects: todo, alarm and journal.
+- Overlapping events (2 or more events that start at the same time and events that start while another event is "running").
+- Fetch all data from akonadi (calendar, todo, alarm and journal).
+- Use kdelibs for time localization (right now is QDate and javascript Date).
+- Events can be longer then one day but not in this calendar yet. It has to be made in which is quite tricky.
+- Probably a lot more.
+
+"QML Calendar" can be replaced with KOrganizer if it has feature parity (or close to it)
