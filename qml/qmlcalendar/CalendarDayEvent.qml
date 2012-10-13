@@ -5,23 +5,19 @@ Item
     id: cell
     property int listIndex: 0
     property QtObject newParent: null
+    state: "default"
 
     states:
     [
         State {
             name: "reparent"
-    //        ParentChange { target: cell; parent: cell.parent.rootElement.itemAt(cell.newIndex); }
             ParentChange { target: cell; parent: cell.newParent; x: 0; }
+            PropertyChanges { target: cell; state: "default"; }
         },
         State {
             name: "default"
         }
     ]
-
-    onParentChanged:
-    {
-        contentMouseArea.isWorking = false
-    }
 
     Rectangle
     {
