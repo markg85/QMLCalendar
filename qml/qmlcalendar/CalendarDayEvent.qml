@@ -41,20 +41,46 @@ Item
             drag.target: cell
             drag.axis: Drag.YAxis
             hoverEnabled: true
-            property bool isWorking: false
+            property bool isInDrag: false
 
             onEntered:
             {
+                if(isInDrag) return; // As long we are in dragging mode the entered and exited events are ignored
                 cell.z = 1
+                utils.setCursor(Qt.OpenHandCursor)
             }
             onExited:
             {
+                if(isInDrag) return; // As long we are in dragging mode the entered and exited events are ignored
                 cell.z = 0
+                utils.setCursor(Qt.ArrowCursor)
+            }
+
+            onPressed:
+            {
+                isInDrag = true
+                utils.setCursor(Qt.ClosedHandCursor)
+                console.log("dragging...")
+            }
+
+            onReleased:
+            {
+                isInDrag = false
+                utils.setCursor(Qt.OpenHandCursor)
+                console.log("released...")
             }
 
             onPositionChanged:
             {
-                if(mouseX < 0 && !isWorking)
+                // ehh, this doesn't work as expected. I'd expect this to prevent draging and event on some place where you
+                // don't have any lists anymore, but using this locks it in it's current list...
+                // TODO: have to figure this one out and fix it.
+//                if(cell.parent.rootElement)
+//                {
+//                    return;
+//                }
+
+                if(mouseX < 0)
                 {
                     cell.state = "default"
                     cell.listIndex--
@@ -62,17 +88,13 @@ Item
                     cell.state = "reparent"
                 }
 
-                if(mouseX > cell.parent.width && !isWorking)
+                if(mouseX > cell.parent.width)
                 {
                     cell.state = "default"
                     cell.listIndex++
                     cell.newParent = cell.parent.rootElement.itemAt(cell.listIndex)
                     cell.state = "reparent"
                 }
-
-                console.log("mouseX: " + mouseX)
-
-//                console.log("Index: " + cell.parent.repeaterIndex)
             }
         }
 
@@ -168,6 +190,25 @@ Item
             {
                 // Note: the time could also be calculated based on the
                 console.log("Handle is released. Recalculate the time of this event.")
+            }
+
+            onPositionChanged:
+            {
+                if(mouseX < 0)
+                {
+                    cell.state = "default"
+                    cell.listIndex--
+                    cell.newParent = cell.parent.rootElement.itemAt(cell.listIndex)
+                    cell.state = "reparent"
+                }
+
+                if(mouseX > cell.parent.width)
+                {
+                    cell.state = "default"
+                    cell.listIndex++
+                    cell.newParent = cell.parent.rootElement.itemAt(cell.listIndex)
+                    cell.state = "reparent"
+                }
             }
         }
     }
