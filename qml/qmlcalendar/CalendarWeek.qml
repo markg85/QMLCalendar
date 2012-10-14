@@ -4,6 +4,7 @@ import QtQuick 1.1
 Rectangle
 {
     id: calendarWeek
+    clip: true
 
     Flickable
     {
@@ -13,18 +14,15 @@ Rectangle
         contentHeight: appRoot.completeDayHeight
         flickableDirection: Flickable.VerticalFlick
 
-        property int widthOfTimelist: 50
         property int widthPerDay: (calendarWeek.width - widthOfTimelist) / numOfDays
         property int numOfDays: 7
-        property list<CalendarDayEventlist> eventList
-
 
         Row
         {
             CalendarDayTimelist
             {
                 id: timeList
-                width: container.widthOfTimelist
+                width: appRoot.widthOfTimelist
                 height: appRoot.completeDayHeight
             }
 

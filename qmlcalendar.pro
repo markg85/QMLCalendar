@@ -6,6 +6,10 @@ DEPLOYMENTFOLDERS = folder_01
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH = /usr/lib/kde4/imports
 
+INCLUDEPATH += /home/mark/kdepimlibs_build/include/
+LIBS +=  -L/home/mark/kdepimlibs_build/lib -lakonadi-calendar
+
+
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
     qmonth.cpp \

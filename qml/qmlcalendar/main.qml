@@ -16,6 +16,7 @@ Rectangle
     property int halfHourSeperatorHeight: 1
     property int hourSeperatorHeight: 1
     property int completeDayHeight: hourHeight * 24
+    property int widthOfTimelist: 50
 
     states:
     [
@@ -51,6 +52,7 @@ Rectangle
         {
             anchors.centerIn: parent
             spacing: 5
+
             PlasmaComponents.ButtonRow
             {
                 PlasmaComponents.Button

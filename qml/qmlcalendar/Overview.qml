@@ -5,12 +5,6 @@ Rectangle
 {
     id: root
 
-    Component.onCompleted:
-    {
-        console.log("width: " + root.width)
-        console.log("height: " + root.height)
-    }
-
     Row
     {
         anchors.fill: parent

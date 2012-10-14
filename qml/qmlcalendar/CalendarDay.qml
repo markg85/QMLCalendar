@@ -3,6 +3,7 @@ import QtQuick 1.1
 Item
 {
     id: calendarDayRoot
+
     Flickable
     {
         id: container
@@ -16,7 +17,7 @@ Item
             CalendarDayTimelist
             {
                 id: timeList
-                width: 50
+                width: appRoot.widthOfTimelist
                 height: appRoot.completeDayHeight
             }
 

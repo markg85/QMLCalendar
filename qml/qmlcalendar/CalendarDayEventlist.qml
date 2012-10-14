@@ -181,9 +181,8 @@ Item
                 y = startPosition
                 height = newHeight
                 visible = true
-
-                console.log("Index: " + index + ' - Y: ' + y + ', Height: ' + height)
             }
+
             width: calendarEventlistRoot.width
             listIndex: calendarEventlistRoot.repeaterIndex
         }
