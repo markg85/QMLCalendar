@@ -9,6 +9,11 @@
 #include <QDeclarativeContext>
 #include <QStandardItem>
 #include <QList>
+#include <QAbstractItemModel>
+
+#include <QTreeView>
+
+#include <akonadi/calendar/etmcalendar.h>
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
@@ -40,6 +45,17 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
 //    qDebug() << " -------------------------------------------------------------------- ";
 
+    Akonadi::ETMCalendar* cal = new Akonadi::ETMCalendar();
+    
+    QAbstractItemModel* data = cal->unfilteredModel();
+    
+    qDebug() << data->rowCount();
+    qDebug() << data->columnCount();
+    
+    QTreeView* test = new QTreeView();
+    test->setModel(data);
+    test->show();
+    
     QCalEventModel eventModel;
     QList<QStandardItem*> list;
 

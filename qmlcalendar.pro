@@ -6,7 +6,8 @@ DEPLOYMENTFOLDERS = folder_01
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH = /usr/lib/kde4/imports
 
-INCLUDEPATH += /home/mark/kdepimlibs_build/include/
+INCLUDEPATH += /home/mark/kdepimlibs/
+INCLUDEPATH += /usr/include/KDE/
 LIBS +=  -L/home/mark/kdepimlibs_build/lib -lakonadi-calendar
 
 
